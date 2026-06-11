@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Rewind — Statistiche WhatsApp</title>
+  <meta name="description" content="Analizza la tua chat WhatsApp esportata e scopri statistiche dettagliate: messaggi totali, per giorno, mese, anno, streak e molto altro." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Hero / Upload Section -->
+  <section id="hero" class="hero">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="logo">
+        <span class="logo-icon">💬</span>
+        <span class="logo-text">Chat <span class="accent">Rewind</span></span>
+      </div>
+      <h1>Le tue conversazioni,<br /><span class="gradient-text">raccontate dai dati.</span></h1>
+      <p class="subtitle">Carica la tua chat WhatsApp esportata e scopri statistiche dettagliate su di te e il tuo interlocutore.</p>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">
+          <strong>Trascina il file qui</strong>
+          <span>oppure clicca per selezionare</span>
+        </div>
+        <div class="upload-hint">Formato supportato: <code>.txt</code> — esportazione WhatsApp</div>
+        <input type="file" id="fileInput" accept=".txt" />
+      </div>
+
+      <div class="how-to">
+        <details>
+          <summary>Come esportare la chat da WhatsApp?</summary>
+          <ol>
+            <li>Apri la chat su WhatsApp</li>
+            <li>Tocca i tre puntini → <strong>Altro</strong> → <strong>Esporta chat</strong></li>
+            <li>Scegli <strong>Senza media</strong></li>
+            <li>Salva il file <code>.txt</code> e caricalo qui</li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <p>Analisi in corso…</p>
+    </div>
+  </div>
+
+  <!-- Stats Dashboard -->
+  <section id="dashboard" class="dashboard hidden">
+
+    <header class="dash-header">
+      <div class="dash-logo">
+        <span class="logo-icon">💬</span>
+        <span class="logo-text">Chat <span class="accent">Rewind</span></span>
+      </div>
+      <button id="resetBtn" class="btn-reset">↩ Carica un'altra chat</button>
+    </header>
+
+    <!-- Chat Participants Banner -->
+    <div class="participants-banner" id="participantsBanner">
+      <div class="participant-card" id="p1Card">
+        <div class="p-avatar" id="p1Avatar"></div>
+        <div class="p-info">
+          <span class="p-name" id="p1Name"></span>
+          <span class="p-msgs" id="p1Msgs"></span>
+        </div>
+        <div class="p-bar-wrap"><div class="p-bar" id="p1Bar"></div></div>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="participant-card right" id="p2Card">
+        <div class="p-avatar" id="p2Avatar"></div>
+        <div class="p-info">
+          <span class="p-name" id="p2Name"></span>
+          <span class="p-msgs" id="p2Msgs"></span>
+        </div>
+        <div class="p-bar-wrap"><div class="p-bar right" id="p2Bar"></div></div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card" id="kpiTotal">
+        <div class="kpi-icon">📨</div>
+        <div class="kpi-value" id="kpiTotalVal">—</div>
+        <div class="kpi-label">Messaggi totali</div>
+      </div>
+      <div class="kpi-card" id="kpiDays">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-value" id="kpiDaysVal">—</div>
+        <div class="kpi-label">Giorni di chat</div>
+      </div>
+      <div class="kpi-card" id="kpiAvgDay">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-value" id="kpiAvgDayVal">—</div>
+        <div class="kpi-label">Media msg/giorno</div>
+      </div>
+      <div class="kpi-card highlight" id="kpiRecord">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-value" id="kpiRecordVal">—</div>
+        <div class="kpi-label">Giorno record</div>
+        <div class="kpi-sub" id="kpiRecordDate"></div>
+      </div>
+      <div class="kpi-card highlight" id="kpiStreak">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-value" id="kpiStreakVal">—</div>
+        <div class="kpi-label">Streak massima</div>
+        <div class="kpi-sub" id="kpiStreakDates"></div>
+      </div>
+      <div class="kpi-card" id="kpiFirst">
+        <div class="kpi-icon">🌱</div>
+        <div class="kpi-value" id="kpiFirstVal">—</div>
+        <div class="kpi-label">Primo messaggio</div>
+      </div>
+      <div class="kpi-card" id="kpiLast">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-value" id="kpiLastVal">—</div>
+        <div class="kpi-label">Ultimo messaggio</div>
+      </div>
+      <div class="kpi-card" id="kpiMonths">
+        <div class="kpi-icon">🗓️</div>
+        <div class="kpi-value" id="kpiMonthsVal">—</div>
+        <div class="kpi-label">Mesi di chat</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+
+      <!-- Daily messages (line chart) -->
+      <div class="chart-card wide">
+        <h3 class="chart-title">📈 Messaggi per giorno</h3>
+        <div class="chart-wrap">
+          <canvas id="chartDaily"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly messages (bar chart) -->
+      <div class="chart-card">
+        <h3 class="chart-title">📅 Messaggi per mese</h3>
+        <div class="chart-wrap">
+          <canvas id="chartMonthly"></canvas>
+        </div>
+      </div>
+
+      <!-- Yearly messages (bar chart) -->
+      <div class="chart-card">
+        <h3 class="chart-title">📆 Messaggi per anno</h3>
+        <div class="chart-wrap">
+          <canvas id="chartYearly"></canvas>
+        </div>
+      </div>
+
+      <!-- Hourly heatmap (bar chart) -->
+      <div class="chart-card wide">
+        <h3 class="chart-title">🕐 Distribuzione oraria</h3>
+        <div class="chart-wrap">
+          <canvas id="chartHourly"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Top Days Table -->
+    <div class="table-section">
+      <h3 class="section-title">🏅 Top 10 giorni più attivi</h3>
+      <div class="table-wrap">
+        <table id="topDaysTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Data</th>
+              <th>Messaggi</th>
+              <th>Distribuzione</th>
+            </tr>
+          </thead>
+          <tbody id="topDaysBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="dash-footer">
+      <p>Chat Rewind — Tutti i dati vengono elaborati localmente nel tuo browser. Nessun file viene inviato a server esterni. 🔒</p>
+    </footer>
+
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
